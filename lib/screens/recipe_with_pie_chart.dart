@@ -73,7 +73,7 @@ class _MyFlipCardState extends State<MyFlipCard> {
     }
   }
 
-  void _fetchRecipes({String? query}) async {
+  Future<void> _fetchRecipes({String? query}) async {
     print("=>>>>>>>>>>>>>>>>>>>>>$query");
     setState(() {
       isLoading = true;
