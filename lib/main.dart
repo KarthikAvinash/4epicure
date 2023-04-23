@@ -45,8 +45,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // home:const SignupScreen(),
-      home: SplashScreen(),
-      // home: ShakeToNavigate(),
+      // home: SplashScreen(),
+      home: ShakeToNavigate(),
       // home:getNutrientsScreen(),
       // home: AboutUsScreen(),
     );

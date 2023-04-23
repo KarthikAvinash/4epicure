@@ -23,6 +23,7 @@ class _MyFlipCardState extends State<MyFlipCard> {
   ScrollController _scrollController = ScrollController();
   bool _sensorActive = false;
   StreamSubscription<AccelerometerEvent>? _subscription;
+
   void _toggleSensor() {
     setState(() {
       _sensorActive = !_sensorActive;
@@ -50,10 +51,11 @@ class _MyFlipCardState extends State<MyFlipCard> {
 
   List<Map<String, dynamic>> recipes = [];
   bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    _fetchRecipes();
+    _fetchRecipeNew();
     if (_sensorActive) {
       _subscription = accelerometerEvents.listen((AccelerometerEvent event) {
         if (event.z > 8.0) {
@@ -70,6 +72,44 @@ class _MyFlipCardState extends State<MyFlipCard> {
           );
         }
       });
+    }
+  }
+
+  Future<void> _fetchRecipeNew() async {
+    try {
+      final response = await http
+          .get(Uri.parse('https://recipenutrition.pythonanywhere.com/recipes'));
+      final responseData = json.decode(response.body) as List<dynamic>;
+      print("@@@@@@@@@");
+      print(response.body);
+      if (response.statusCode == 200) {
+        // final jsonResponse = json.decode(response.body);
+        final List<Map<String, dynamic>> newRecipes =
+            responseData.map((recipeData) {
+          return {
+            'title': recipeData['title'],
+            'short_description': recipeData['short_description'],
+            'image_url': recipeData['image_url'],
+            'description': recipeData['description'],
+            'ingredients': recipeData['ingredients'],
+            'steps_with_images': recipeData['steps_with_images'],
+            'nutrition': recipeData['nutrition'],
+            'cook_time': recipeData['cook_time'],
+            'rating': recipeData['rating'],
+          };
+        }).toList();
+        setState(() {
+          recipes = newRecipes;
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load recipes');
+      }
+    } catch (error) {
+      print(error);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to load recipe screen'),
+      ));
     }
   }
 
@@ -124,14 +164,13 @@ class _MyFlipCardState extends State<MyFlipCard> {
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.dispose();
     _subscription
         ?.cancel(); // cancel the subscription when disposing the widget
     super.dispose();
   }
 
   void _handleSearch() {
-    _fetchRecipes(query: _searchText);
+    _fetchRecipeNew();
   }
 
   @override
